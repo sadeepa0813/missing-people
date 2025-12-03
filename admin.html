@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal | පරිපාලන පෝර්ටල්</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <i class="fas fa-search-location me-2"></i>
+                <span class="fw-bold">අතුරුදන් වූවන්</span>
+                <span class="ms-2 fw-light">Missing Persons</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-home me-1"></i> Public Portal</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="admin.html"><i class="fas fa-tachometer-alt me-1"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="add.html"><i class="fas fa-plus-circle me-1"></i> Add New</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user me-1"></i> <span id="userEmail">user@example.com</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-1"></i> Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt me-1"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="admin.html">
+                                <i class="fas fa-list me-2"></i> All Records
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">
+                                <i class="fas fa-chart-pie me-2"></i> Analytics
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="add.html">
+                                <i class="fas fa-plus-circle me-2"></i> Add New Person
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
+                                <i class="fas fa-file-upload me-2"></i> Bulk Upload (CSV)
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="exportBtn">
+                                <i class="fas fa-download me-2"></i> Export Data
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Missing Persons Management</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshBtn">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search and Filter Section -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Search by name...">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="districtFilter">
+                                    <option value="">All Districts</option>
+                                    <option value="Ampara">අම්පාර</option>
+                                    <option value="Anuradhapura">අනුරාධපුරය</option>
+                                    <option value="Badulla">බදුල්ල</option>
+                                    <option value="Batticaloa">මඩකලපුව</option>
+                                    <option value="Colombo">කොළඹ</option>
+                                    <option value="Galle">ගාල්ල</option>
+                                    <option value="Gampaha">ගම්පහ</option>
+                                    <option value="Hambantota">හම්බන්තොට</option>
+                                    <option value="Jaffna">යාපනය</option>
+                                    <option value="Kalutara">කළුතර</option>
+                                    <option value="Kandy">මහනුවර</option>
+                                    <option value="Kegalle">කෑගල්ල</option>
+                                    <option value="Kilinochchi">කිලිනොච්චිය</option>
+                                    <option value="Kurunegala">කුරුණෑගල</option>
+                                    <option value="Mannar">මන්නාරම</option>
+                                    <option value="Matale">මාතලේ</option>
+                                    <option value="Matara">මාතර</option>
+                                    <option value="Moneragala">මොණරාගල</option>
+                                    <option value="Mullaitivu">මුලතිව්</option>
+                                    <option value="Nuwara Eliya">නුවරඑළිය</option>
+                                    <option value="Polonnaruwa">පොලොන්නරුව</option>
+                                    <option value="Puttalam">පුත්තලම</option>
+                                    <option value="Ratnapura">රත්නපුර</option>
+                                    <option value="Trincomalee">ත්රිකුණාමලය</option>
+                                    <option value="Vavuniya">වවුනියාව</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="statusFilter">
+                                    <option value="">All Status</option>
+                                    <option value="Missing">අතුරුදන්</option>
+                                    <option value="Found">සොයාගෙන ඇත</option>
+                                    <option value="Under Review">සමාලෝචනය යටතේ</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" id="sortFilter">
+                                    <option value="newest">Newest First</option>
+                                    <option value="oldest">Oldest First</option>
+                                    <option value="alphabetical">Alphabetical (A-Z)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-primary w-100" id="applyFiltersBtn">
+                                    <i class="fas fa-filter me-1"></i> Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data Table -->
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Photo</th>
+                                        <th>Name</th>
+                                        <th>Age</th>
+                                        <th>Gender</th>
+                                        <th>District</th>
+                                        <th>Status</th>
+                                        <th>Last Seen</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="missingPersonsTableBody">
+                                    <!-- Table rows will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Loading Spinner -->
+                        <div id="loadingSpinner" class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                        
+                        <!-- No Results Message -->
+                        <div id="noResults" class="alert alert-info d-none" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>No missing persons found matching your criteria.
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bulk Upload Modal -->
+    <div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-labelledby="bulkUploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bulkUploadModalLabel">Bulk Upload (CSV)</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Upload a CSV file with missing person data. The file should contain the following columns in order:</p>
+                    <ul>
+                        <li>Name</li>
+                        <li>Age</li>
+                        <li>Gender (Male/Female/Other)</li>
+                        <li>Contact Number</li>
+                        <li>Description</li>
+                        <li>District</li>
+                        <li>Last Seen Date (YYYY-MM-DD)</li>
+                        <li>Last Seen Latitude</li>
+                        <li>Last Seen Longitude</li>
+                        <li>Photo URL (optional)</li>
+                    </ul>
+                    <div class="mb-3">
+                        <label for="csvFile" class="form-label">Select CSV File</label>
+                        <input type="file" class="form-control" id="csvFile" accept=".csv">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="uploadCsvBtn">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-bell me-2"></i>
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Papa Parse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="firebase.js"></script>
+    <script src="auth.js"></script>
+    <script src="utils.js"></script>
+    
+    <script>
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            auth.onAuthStateChanged(user => {
+                if (!user) {
+                    // User is not signed in, redirect to login page
+                    window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
+                } else {
+                    // User is signed in, proceed
+                    window.currentUser = user;
+                    document.getElementById('userEmail').textContent = user.email;
+                    
+                    // Load missing persons data
+                    loadMissingPersons();
+                    
+                    // Set up event listeners
+                    setupEventListeners();
+                }
+            });
+        });
+
+        // Function to load missing persons
+        function loadMissingPersons() {
+            // Show loading spinner
+            document.getElementById('loadingSpinner').classList.remove('d-none');
+            document.getElementById('noResults').classList.add('d-none');
+            
+            // Get filter values
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const districtFilter = document.getElementById('districtFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+            
+            // Get missing persons from Firestore
+            db.collection('missingPersons')
+                .get()
+                .then(snapshot => {
+                    let missingPersons = [];
+                    
+                    snapshot.forEach(doc => {
+                        const person = doc.data();
+                        person.id = doc.id;
+                        
+                        // Apply filters
+                        if (searchTerm && !person.name.toLowerCase().includes(searchTerm)) {
+                            return;
+                        }
+                        
+                        if (districtFilter && person.district !== districtFilter) {
+                            return;
+                        }
+                        
+                        if (statusFilter && person.status !== statusFilter) {
+                            return;
+                        }
+                        
+                        missingPersons.push(person);
+                    });
+                    
+                    // Sort results
+                    switch (sortFilter) {
+                        case 'newest':
+                            missingPersons.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+                            break;
+                        case 'oldest':
+                            missingPersons.sort((a, b) => a.createdAt.toDate() - b.createdAt.toDate());
+                            break;
+                        case 'alphabetical':
+                            missingPersons.sort((a, b) => a.name.localeCompare(b.name));
+                            break;
+                    }
+                    
+                    // Hide loading spinner
+                    document.getElementById('loadingSpinner').classList.add('d-none');
+                    
+                    // Display results
+                    if (missingPersons.length > 0) {
+                        displayMissingPersons(missingPersons);
+                        document.getElementById('noResults').classList.add('d-none');
+                    } else {
+                        document.getElementById('missingPersonsTableBody').innerHTML = '';
+                        document.getElementById('noResults').classList.remove('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading missing persons:', error);
+                    showToast('Error loading data. Please try again.', 'danger');
+                    
+                    // Hide loading spinner
+                    document.getElementById('loadingSpinner').classList.add('d-none');
+                    document.getElementById('noResults').classList.remove('d-none');
+                });
+        }
+
+        // Function to display missing persons in table
+        function displayMissingPersons(missingPersons) {
+            const tableBody = document.getElementById('missingPersonsTableBody');
+            tableBody.innerHTML = '';
+            
+            missingPersons.forEach(person => {
+                // Format date
+                const lastSeenDate = person.lastSeenDate ? 
+                    new Date(person.lastSeenDate.toDate ? person.lastSeenDate.toDate() : person.lastSeenDate).toLocaleDateString() : 
+                    'Unknown';
+                
+                // Determine status badge class
+                let statusBadgeClass = 'bg-danger';
+                if (person.status === 'Found') {
+                    statusBadgeClass = 'bg-success';
+                } else if (person.status === 'Under Review') {
+                    statusBadgeClass = 'bg-warning';
+                }
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <img src="${person.photoURL || 'https://via.placeholder.com/50x50?text=No+Photo'}" 
+                             class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;" alt="${person.name}">
+                    </td>
+                    <td>${person.name}</td>
+                    <td>${person.age || 'Unknown'}</td>
+                    <td>${person.gender || 'Unknown'}</td>
+                    <td>${person.district || 'Unknown'}</td>
+                    <td><span class="badge ${statusBadgeClass}">${person.status || 'Missing'}</span></td>
+                    <td>${lastSeenDate}</td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="view.html?id=${person.id}" class="btn btn-sm btn-outline-primary" title="View">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="edit.html?id=${person.id}" class="btn btn-sm btn-outline-warning" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-success change-status-btn" data-id="${person.id}" data-status="${person.status}" title="Change Status">
+                                <i class="fas fa-exchange-alt"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Add event listeners to change status buttons
+            document.querySelectorAll('.change-status-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const currentStatus = this.getAttribute('data-status');
+                    showChangeStatusModal(id, currentStatus);
+                });
+            });
+        }
+
+        // Function to set up event listeners
+        function setupEventListeners() {
+            // Search and filter inputs
+            document.getElementById('searchInput').addEventListener('input', debounce(loadMissingPersons, 500));
+            document.getElementById('districtFilter').addEventListener('change', loadMissingPersons);
+            document.getElementById('statusFilter').addEventListener('change', loadMissingPersons);
+            document.getElementById('sortFilter').addEventListener('change', loadMissingPersons);
+            
+            // Apply filters button
+            document.getElementById('applyFiltersBtn').addEventListener('click', loadMissingPersons);
+            
+            // Refresh button
+            document.getElementById('refreshBtn').addEventListener('click', function() {
+                this.querySelector('i').classList.add('fa-spin');
+                loadMissingPersons();
+                setTimeout(() => {
+                    this.querySelector('i').classList.remove('fa-spin');
+                }, 1000);
+            });
+            
+            // Export button
+            document.getElementById('exportBtn').addEventListener('click', function() {
+                exportData();
+            });
+            
+            // Upload CSV button
+            document.getElementById('uploadCsvBtn').addEventListener('click', function() {
+                const fileInput = document.getElementById('csvFile');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    showToast('Please select a CSV file', 'warning');
+                    return;
+                }
+                
+                // Show loading state
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Uploading...';
+                this.disabled = true;
+                
+                // Parse CSV file
+                Papa.parse(file, {
+                    header: false,
+                    complete: function(results) {
+                        const data = results.data;
+                        
+                        // Skip header row if exists
+                        const startIndex = isNaN(parseInt(data[0][1])) ? 1 : 0;
+                        
+                        let uploadPromises = [];
+                        
+                        for (let i = startIndex; i < data.length; i++) {
+                            const row = data[i];
+                            
+                            // Skip empty rows
+                            if (!row[0] || !row[0].trim()) {
+                                continue;
+                            }
+                            
+                            // Create person object
+                            const person = {
+                                name: row[0] || '',
+                                age: parseInt(row[1]) || 0,
+                                gender: row[2] || '',
+                                contact: row[3] || '',
+                                description: row[4] || '',
+                                district: row[5] || '',
+                                lastSeenDate: row[6] ? firebase.firestore.Timestamp.fromDate(new Date(row[6])) : null,
+                                lastSeenLat: parseFloat(row[7]) || null,
+                                lastSeenLng: parseFloat(row[8]) || null,
+                                photoURL: row[9] || '',
+                                status: 'Missing',
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                createdBy: window.currentUser.uid,
+                                activityLog: [{
+                                    action: 'Added',
+                                    by: window.currentUser.email,
+                                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                                }]
+                            };
+                            
+                            // Add to Firestore
+                            uploadPromises.push(db.collection('missingPersons').add(person));
+                        }
+                        
+                        // Wait for all uploads to complete
+                        Promise.all(uploadPromises)
+                            .then(() => {
+                                // Success
+                                showToast(`${uploadPromises.length} records uploaded successfully`, 'success');
+                                
+                                // Close modal
+                                const bulkUploadModal = bootstrap.Modal.getInstance(document.getElementById('bulkUploadModal'));
+                                bulkUploadModal.hide();
+                                
+                                // Reset form
+                                fileInput.value = '';
+                                
+                                // Reset button state
+                                document.getElementById('uploadCsvBtn').innerHTML = originalText;
+                                document.getElementById('uploadCsvBtn').disabled = false;
+                                
+                                // Reload data
+                                loadMissingPersons();
+                            })
+                            .catch(error => {
+                                console.error('Error uploading CSV:', error);
+                                showToast('Error uploading CSV. Please try again.', 'danger');
+                                
+                                // Reset button state
+                                document.getElementById('uploadCsvBtn').innerHTML = originalText;
+                                document.getElementById('uploadCsvBtn').disabled = false;
+                            });
+                    },
+                    error: function(error) {
+                        console.error('Error parsing CSV:', error);
+                        showToast('Error parsing CSV file. Please check the file format.', 'danger');
+                        
+                        // Reset button state
+                        document.getElementById('uploadCsvBtn').innerHTML = originalText;
+                        document.getElementById('uploadCsvBtn').disabled = false;
+                    }
+                });
+            });
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                auth.signOut()
+                    .then(() => {
+                        window.location.href = 'login.html';
+                    })
+                    .catch(error => {
+                        console.error('Error signing out:', error);
+                        showToast('Error signing out. Please try again.', 'danger');
+                    });
+            });
+        }
+
+        // Function to show change status modal
+        function showChangeStatusModal(id, currentStatus) {
+            // Create modal dynamically
+            const modalHtml = `
+                <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="changeStatusModalLabel">Change Status</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="newStatusSelect" class="form-label">New Status:</label>
+                                    <select class="form-select" id="newStatusSelect">
+                                        <option value="Missing" ${currentStatus === 'Missing' ? 'selected' : ''}>Missing</option>
+                                        <option value="Found" ${currentStatus === 'Found' ? 'selected' : ''}>Found</option>
+                                        <option value="Under Review" ${currentStatus === 'Under Review' ? 'selected' : ''}>Under Review</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="statusNote" class="form-label">Note (optional):</label>
+                                    <textarea class="form-control" id="statusNote" rows="3"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-primary" id="saveStatusChangeBtn">Save Changes</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            const existingModal = document.getElementById('changeStatusModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Add modal to body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Show modal
+            const changeStatusModal = new bootstrap.Modal(document.getElementById('changeStatusModal'));
+            changeStatusModal.show();
+            
+            // Set up event listener for save button
+            document.getElementById('saveStatusChangeBtn').addEventListener('click', function() {
+                const newStatus = document.getElementById('newStatusSelect').value;
+                const statusNote = document.getElementById('statusNote').value;
+                
+                // Update status in Firestore
+                db.collection('missingPersons').doc(id).update({
+                    status: newStatus,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: window.currentUser.uid,
+                    activityLog: firebase.firestore.FieldValue.arrayUnion({
+                        action: 'Status Changed',
+                        details: `Status changed to ${newStatus}${statusNote ? ': ' + statusNote : ''}`,
+                        by: window.currentUser.email,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    })
+                })
+                .then(() => {
+                    // Close modal
+                    changeStatusModal.hide();
+                    
+                    // Show success message
+                    showToast('Status updated successfully', 'success');
+                    
+                    // Reload data
+                    loadMissingPersons();
+                })
+                .catch(error => {
+                    console.error('Error updating status:', error);
+                    showToast('Error updating status. Please try again.', 'danger');
+                });
+            });
+        }
+
+        // Function to export data
+        function exportData() {
+            // Get filter values
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const districtFilter = document.getElementById('districtFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            // Get missing persons from Firestore
+            db.collection('missingPersons')
+                .get()
+                .then(snapshot => {
+                    let missingPersons = [];
+                    
+                    snapshot.forEach(doc => {
+                        const person = doc.data();
+                        person.id = doc.id;
+                        
+                        // Apply filters
+                        if (searchTerm && !person.name.toLowerCase().includes(searchTerm)) {
+                            return;
+                        }
+                        
+                        if (districtFilter && person.district !== districtFilter) {
+                            return;
+                        }
+                        
+                        if (statusFilter && person.status !== statusFilter) {
+                            return;
+                        }
+                        
+                        missingPersons.push(person);
+                    });
+                    
+                    // Convert to CSV
+                    const csv = convertToCSV(missingPersons);
+                    
+                    // Create download link
+                    const blob = new Blob([csv], { type: 'text/csv' });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `missing_persons_${new Date().toISOString().slice(0, 10)}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    // Show success message
+                    showToast('Data exported successfully', 'success');
+                })
+                .catch(error => {
+                    console.error('Error exporting data:', error);
+                    showToast('Error exporting data. Please try again.', 'danger');
+                });
+        }
+
+        // Function to convert data to CSV
+        function convertToCSV(data) {
+            const headers = ['ID', 'Name', 'Age', 'Gender', 'Contact', 'Description', 'District', 'Last Seen Date', 'Last Seen Latitude', 'Last Seen Longitude', 'Status', 'Created At'];
+            
+            const csvRows = [headers.join(',')];
+            
+            for (const person of data) {
+                const row = [
+                    person.id,
+                    `"${person.name || ''}"`,
+                    person.age || '',
+                    `"${person.gender || ''}"`,
+                    `"${person.contact || ''}"`,
+                    `"${person.description || ''}"`,
+                    `"${person.district || ''}"`,
+                    person.lastSeenDate ? new Date(person.lastSeenDate.toDate ? person.lastSeenDate.toDate() : person.lastSeenDate).toISOString().slice(0, 10) : '',
+                    person.lastSeenLat || '',
+                    person.lastSeenLng || '',
+                    `"${person.status || ''}"`,
+                    person.createdAt ? new Date(person.createdAt.toDate ? person.createdAt.toDate() : person.createdAt).toISOString() : ''
+                ];
+                
+                csvRows.push(row.join(','));
+            }
+            
+            return csvRows.join('\n');
+        }
+
+        // Function to show toast notification
+        function showToast(message, type = 'info') {
+            const toastElement = document.getElementById('notificationToast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            // Set message
+            toastMessage.textContent = message;
+            
+            // Set toast type
+            toastElement.className = `toast text-white bg-${type}`;
+            
+            // Show toast
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+
+        // Debounce function to limit API calls
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    func.apply(context, args);
+                }, wait);
+            };
+        }
+    </script>
+</body>
+</html>
