@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Missing Person | අතුරුදන් වූ පුද්ගලයා සංස්කරණය</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <i class="fas fa-search-location me-2"></i>
+                <span class="fw-bold">අතුරුදන් වූවන්</span>
+                <span class="ms-2 fw-light">Missing Persons</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="admin.html"><i class="fas fa-user-shield me-1"></i> Admin Panel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt me-1"></i> Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="container mt-4 mb-5 d-none">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Edit Missing Person Details</h4>
+                        <div>
+                            <button type="button" class="btn btn-danger btn-sm" id="deleteBtn">
+                                <i class="fas fa-trash me-1"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="editMissingPersonForm">
+                            <!-- Personal Information -->
+                            <h5 class="mb-3">Personal Information</h5>
+                            
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" required>
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="age" class="form-label">Age <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="age" min="1" max="120" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="gender" required>
+                                        <option value="" selected disabled>Select Gender</option>
+                                        <option value="Male">පිරිමි / Male</option>
+                                        <option value="Female">ගැහැණු / Female</option>
+                                        <option value="Other">වෙනත් / Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" rows="4" placeholder="Provide any identifying features, clothing, etc." required></textarea>
+                            </div>
+                            
+                            <!-- Contact Information -->
+                            <h5 class="mb-3 mt-4">Contact Information</h5>
+                            
+                            <div class="mb-3">
+                                <label for="contact" class="form-label">Contact Number <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control" id="contact" placeholder="+94 XX XXXXXXX" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="district" class="form-label">District <span class="text-danger">*</span></label>
+                                <select class="form-select" id="district" required>
+                                    <option value="" selected disabled>Select District</option>
+                                    <option value="Ampara">අම්පාර / Ampara</option>
+                                    <option value="Anuradhapura">අනුරාධපුරය / Anuradhapura</option>
+                                    <option value="Badulla">බදුල්ල / Badulla</option>
+                                    <option value="Batticaloa">මඩකලපුව / Batticaloa</option>
+                                    <option value="Colombo">කොළඹ / Colombo</option>
+                                    <option value="Galle">ගාල්ල / Galle</option>
+                                    <option value="Gampaha">ගම්පහ / Gampaha</option>
+                                    <option value="Hambantota">හම්බන්තොට / Hambantota</option>
+                                    <option value="Jaffna">යාපනය / Jaffna</option>
+                                    <option value="Kalutara">කළුතර / Kalutara</option>
+                                    <option value="Kandy">මහනුවර / Kandy</option>
+                                    <option value="Kegalle">කෑගල්ල / Kegalle</option>
+                                    <option value="Kilinochchi">කිලිනොච්චිය / Kilinochchi</option>
+                                    <option value="Kurunegala">කුරුණෑගල / Kurunegala</option>
+                                    <option value="Mannar">මන්නාරම / Mannar</option>
+                                    <option value="Matale">මාතලේ / Matale</option>
+                                    <option value="Matara">මාතර / Matara</option>
+                                    <option value="Moneragala">මොණරාගල / Moneragala</option>
+                                    <option value="Mullaitivu">මුලතිව් / Mullaitivu</option>
+                                    <option value="Nuwara Eliya">නුවරඑළිය / Nuwara Eliya</option>
+                                    <option value="Polonnaruwa">පොලොන්නරුව / Polonnaruwa</option>
+                                    <option value="Puttalam">පුත්තලම / Puttalam</option>
+                                    <option value="Ratnapura">රත්නපුර / Ratnapura</option>
+                                    <option value="Trincomalee">ත්රිකුණාමලය / Trincomalee</option>
+                                    <option value="Vavuniya">වවුනියාව / Vavuniya</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Last Seen Information -->
+                            <h5 class="mb-3 mt-4">Last Seen Information</h5>
+                            
+                            <div class="mb-3">
+                                <label for="lastSeenDate" class="form-label">Date & Time Last Seen <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" id="lastSeenDate" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Last Seen Location <span class="text-danger">*</span></label>
+                                <div class="mb-2">
+                                    <small class="text-muted">Click on the map to select the location where the person was last seen</small>
+                                </div>
+                                <div id="locationPickerMap" style="height: 300px; border-radius: 8px;"></div>
+                                <input type="hidden" id="lastSeenLat" required>
+                                <input type="hidden" id="lastSeenLng" required>
+                                <div id="locationText" class="mt-2">
+                                    <small class="text-muted">No location selected</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Status -->
+                            <h5 class="mb-3 mt-4">Status</h5>
+                            
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Current Status <span class="text-danger">*</span></label>
+                                <select class="form-select" id="status" required>
+                                    <option value="Missing">අතුරුදන් / Missing</option>
+                                    <option value="Found">සොයාගෙන ඇත / Found</option>
+                                    <option value="Under Review">සමාලෝචනය යටතේ / Under Review</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Photo Upload -->
+                            <h5 class="mb-3 mt-4">Photo</h5>
+                            
+                            <div class="mb-3">
+                                <label for="photo" class="form-label">Update Photo</label>
+                                <input type="file" class="form-control" id="photo" accept="image/*">
+                                <div class="form-text">Leave empty to keep the current photo. Maximum file size: 5MB</div>
+                                
+                                <!-- Current Photo Preview -->
+                                <div id="currentPhotoPreview" class="mt-3">
+                                    <label class="form-label">Current Photo:</label>
+                                    <img id="currentImage" src="" class="img-thumbnail" style="max-height: 200px;">
+                                </div>
+                                
+                                <!-- New Photo Preview -->
+                                <div id="newPhotoPreview" class="mt-3 d-none">
+                                    <label class="form-label">New Photo:</label>
+                                    <img id="newPreviewImage" src="" class="img-thumbnail" style="max-height: 200px;">
+                                    <button type="button" class="btn btn-sm btn-danger ms-2" id="removeNewPhotoBtn">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="d-grid mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                    <i class="fas fa-save me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this missing person record? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>අතුරුදන් වූවන් පිළිබඳ ජාතික තොරතුරු පද්ධතිය</h5>
+                    <p>National Missing Person Management System for Disaster Situations</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2023 Disaster Management Authority of Sri Lanka</p>
+                    <p>All rights reserved</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-bell me-2"></i>
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="firebase.js"></script>
+    <script src="auth.js"></script>
+    <script src="map.js"></script>
+    <script src="utils.js"></script>
+    
+    <script>
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            auth.onAuthStateChanged(user => {
+                if (!user) {
+                    // User is not signed in, redirect to login page
+                    window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.href);
+                } else {
+                    // User is signed in, proceed
+                    window.currentUser = user;
+                    
+                    // Get person ID from URL
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const personId = urlParams.get('id');
+                    
+                    if (personId) {
+                        loadPersonDetails(personId);
+                    } else {
+                        // No ID provided, redirect to admin page
+                        window.location.href = 'admin.html';
+                    }
+                    
+                    // Set up event listeners
+                    setupEventListeners();
+                }
+            });
+        });
+
+        // Function to load person details into the form
+        function loadPersonDetails(personId) {
+            db.collection('missingPersons').doc(personId).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const person = doc.data();
+                        window.currentPersonId = personId;
+                        window.currentPerson = person;
+                        
+                        // Populate form fields
+                        document.getElementById('name').value = person.name || '';
+                        document.getElementById('age').value = person.age || '';
+                        document.getElementById('gender').value = person.gender || '';
+                        document.getElementById('description').value = person.description || '';
+                        document.getElementById('contact').value = person.contact || '';
+                        document.getElementById('district').value = person.district || '';
+                        document.getElementById('status').value = person.status || 'Missing';
+                        
+                        // Format date for datetime-local input
+                        if (person.lastSeenDate) {
+                            const date = person.lastSeenDate.toDate ? person.lastSeenDate.toDate() : new Date(person.lastSeenDate);
+                            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                            document.getElementById('lastSeenDate').value = date.toISOString().slice(0, 16);
+                        }
+                        
+                        // Set location
+                        if (person.lastSeenLat && person.lastSeenLng) {
+                            document.getElementById('lastSeenLat').value = person.lastSeenLat;
+                            document.getElementById('lastSeenLng').value = person.lastSeenLng;
+                        }
+                        
+                        // Display current photo
+                        if (person.photoURL) {
+                            document.getElementById('currentImage').src = person.photoURL;
+                        } else {
+                            document.getElementById('currentPhotoPreview').innerHTML = '<p class="text-muted">No photo available</p>';
+                        }
+                        
+                        // Initialize map
+                        initializeLocationPicker(person.lastSeenLat, person.lastSeenLng);
+                        
+                        // Show main content, hide loading spinner
+                        document.getElementById('loadingSpinner').classList.add('d-none');
+                        document.getElementById('mainContent').classList.remove('d-none');
+                    } else {
+                        // Document doesn't exist
+                        showToast('Missing person not found', 'warning');
+                        setTimeout(() => {
+                            window.location.href = 'admin.html';
+                        }, 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading person details:', error);
+                    showToast('Error loading data. Please try again.', 'danger');
+                    
+                    document.getElementById('loadingSpinner').classList.add('d-none');
+                });
+        }
+
+        // Function to initialize location picker map
+        function initializeLocationPicker(lat, lng) {
+            // Create map centered on Sri Lanka or provided location
+            const centerLat = lat || 7.8731;
+            const centerLng = lng || 80.7718;
+            const zoom = lat ? 13 : 8;
+            
+            window.locationPickerMap = L.map('locationPickerMap').setView([centerLat, centerLng], zoom);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(window.locationPickerMap);
+            
+            // Add click event to map
+            window.locationPickerMap.on('click', function(e) {
+                setLastSeenLocation(e.latlng.lat, e.latlng.lng);
+            });
+            
+            // Add existing marker if location is provided
+            if (lat && lng) {
+                setLastSeenLocation(lat, lng);
+            }
+        }
+
+        // Function to set last seen location
+        function setLastSeenLocation(lat, lng) {
+            // Update hidden inputs
+            document.getElementById('lastSeenLat').value = lat;
+            document.getElementById('lastSeenLng').value = lng;
+            
+            // Update location text
+            document.getElementById('locationText').innerHTML = `
+                <small class="text-success">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    Location selected: ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                </small>
+            `;
+            
+            // Remove existing marker if any
+            if (window.locationMarker) {
+                window.locationPickerMap.removeLayer(window.locationMarker);
+            }
+            
+            // Add new marker
+            window.locationMarker = L.marker([lat, lng]).addTo(window.locationPickerMap);
+        }
+
+        // Function to set up event listeners
+        function setupEventListeners() {
+            // Form submission
+            document.getElementById('editMissingPersonForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Validate form
+                if (!validateForm()) {
+                    showToast('Please fill in all required fields', 'warning');
+                    return;
+                }
+                
+                // Show loading state
+                const submitBtn = document.getElementById('submitBtn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+                submitBtn.disabled = true;
+                
+                // Get form data
+                const formData = getFormData();
+                
+                // Update data in Firestore
+                updateMissingPerson(formData, window.currentPersonId, window.currentUser)
+                    .then(() => {
+                        // Success
+                        showToast('Missing person details updated successfully', 'success');
+                        
+                        // Reset button state
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                        
+                        // Redirect to view page after a short delay
+                        setTimeout(() => {
+                            window.location.href = `view.html?id=${window.currentPersonId}`;
+                        }, 2000);
+                    })
+                    .catch(error => {
+                        console.error('Error updating details:', error);
+                        showToast('Error updating details. Please try again.', 'danger');
+                        
+                        // Reset button state
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    });
+            });
+            
+            // Delete button
+            document.getElementById('deleteBtn').addEventListener('click', function() {
+                // Show confirmation modal
+                const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                deleteModal.show();
+            });
+            
+            // Confirm delete button
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                // Show loading state
+                const confirmBtn = document.getElementById('confirmDeleteBtn');
+                const originalText = confirmBtn.innerHTML;
+                confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Deleting...';
+                confirmBtn.disabled = true;
+                
+                // Delete from Firestore
+                deleteMissingPerson(window.currentPersonId)
+                    .then(() => {
+                        // Success
+                        showToast('Missing person record deleted successfully', 'success');
+                        
+                        // Close modal
+                        const deleteModal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
+                        deleteModal.hide();
+                        
+                        // Redirect to admin page after a short delay
+                        setTimeout(() => {
+                            window.location.href = 'admin.html';
+                        }, 2000);
+                    })
+                    .catch(error => {
+                        console.error('Error deleting record:', error);
+                        showToast('Error deleting record. Please try again.', 'danger');
+                        
+                        // Reset button state
+                        confirmBtn.innerHTML = originalText;
+                        confirmBtn.disabled = false;
+                    });
+            });
+            
+            // Photo upload
+            document.getElementById('photo').addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                
+                if (file) {
+                    // Check file size (5MB max)
+                    if (file.size > 5 * 1024 * 1024) {
+                        showToast('File size exceeds 5MB limit', 'warning');
+                        e.target.value = '';
+                        return;
+                    }
+                    
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        document.getElementById('newPreviewImage').src = e.target.result;
+                        document.getElementById('newPhotoPreview').classList.remove('d-none');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+            
+            // Remove new photo button
+            document.getElementById('removeNewPhotoBtn').addEventListener('click', function() {
+                document.getElementById('photo').value = '';
+                document.getElementById('newPhotoPreview').classList.add('d-none');
+            });
+            
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                auth.signOut()
+                    .then(() => {
+                        window.location.href = 'login.html';
+                    })
+                    .catch(error => {
+                        console.error('Error signing out:', error);
+                        showToast('Error signing out. Please try again.', 'danger');
+                    });
+            });
+        }
+
+        // Function to validate form
+        function validateForm() {
+            // Check required fields
+            const requiredFields = ['name', 'age', 'gender', 'description', 'contact', 'district', 'lastSeenDate'];
+            
+            for (const field of requiredFields) {
+                const element = document.getElementById(field);
+                if (!element.value.trim()) {
+                    element.focus();
+                    return false;
+                }
+            }
+            
+            // Check if location is selected
+            if (!document.getElementById('lastSeenLat').value || !document.getElementById('lastSeenLng').value) {
+                showToast('Please select a location on the map', 'warning');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Function to get form data
+        function getFormData() {
+            return {
+                name: document.getElementById('name').value.trim(),
+                age: parseInt(document.getElementById('age').value),
+                gender: document.getElementById('gender').value,
+                description: document.getElementById('description').value.trim(),
+                contact: document.getElementById('contact').value.trim(),
+                district: document.getElementById('district').value,
+                lastSeenDate: firebase.firestore.Timestamp.fromDate(new Date(document.getElementById('lastSeenDate').value)),
+                lastSeenLat: parseFloat(document.getElementById('lastSeenLat').value),
+                lastSeenLng: parseFloat(document.getElementById('lastSeenLng').value),
+                status: document.getElementById('status').value,
+                photoFile: document.getElementById('photo').files[0] || null
+            };
+        }
+
+        // Function to update missing person
+        function updateMissingPerson(formData, personId, user) {
+            // Prepare data for update
+            const dataToUpdate = {
+                name: formData.name,
+                age: formData.age,
+                gender: formData.gender,
+                description: formData.description,
+                contact: formData.contact,
+                district: formData.district,
+                lastSeenDate: formData.lastSeenDate,
+                lastSeenLat: formData.lastSeenLat,
+                lastSeenLng: formData.lastSeenLng,
+                status: formData.status,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: user.uid,
+                activityLog: firebase.firestore.FieldValue.arrayUnion({
+                    action: 'Edited',
+                    by: user.email,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                })
+            };
+            
+            // Check if status has changed
+            if (window.currentPerson.status !== formData.status) {
+                dataToUpdate.activityLog = firebase.firestore.FieldValue.arrayUnion({
+                    action: 'Status Changed',
+                    details: `Status changed from ${window.currentPerson.status || 'Missing'} to ${formData.status}`,
+                    by: user.email,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+            
+            // Check if there's a new photo to upload
+            if (formData.photoFile) {
+                // Upload new photo first
+                const storageRef = storage.ref();
+                const photoRef = storageRef.child(`missingPersons/${personId}/photo.jpg`);
+                
+                // Compress and resize image before uploading
+                return compressImage(formData.photoFile, 1024, 1024, 0.7)
+                    .then(compressedFile => {
+                        return photoRef.put(compressedFile);
+                    })
+                    .then(snapshot => {
+                        return snapshot.ref.getDownloadURL();
+                    })
+                    .then(photoURL => {
+                        // Add photo URL to data
+                        dataToUpdate.photoURL = photoURL;
+                        
+                        // Update data in Firestore
+                        return db.collection('missingPersons').doc(personId).update(dataToUpdate);
+                    });
+            } else {
+                // No new photo, update data directly
+                return db.collection('missingPersons').doc(personId).update(dataToUpdate);
+            }
+        }
+
+        // Function to delete missing person
+        function deleteMissingPerson(personId) {
+            // Delete from Firestore
+            return db.collection('missingPersons').doc(personId).delete()
+                .then(() => {
+                    // Delete photo from Storage if it exists
+                    const storageRef = storage.ref();
+                    const photoRef = storageRef.child(`missingPersons/${personId}/photo.jpg`);
+                    
+                    return photoRef.delete().catch(error => {
+                        // Photo might not exist, ignore error
+                        console.log('Photo not found or already deleted:', error);
+                    });
+                });
+        }
+
+        // Function to show toast notification
+        function showToast(message, type = 'info') {
+            const toastElement = document.getElementById('notificationToast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            // Set message
+            toastMessage.textContent = message;
+            
+            // Set toast type
+            toastElement.className = `toast text-white bg-${type}`;
+            
+            // Show toast
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+    </script>
+</body>
+</html>
