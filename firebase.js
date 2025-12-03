@@ -1,41 +1,37 @@
 // ===================================
-// Firebase Configuration
+// auth.js (Updated for Modular SDK)
 // ===================================
-// REPLACE WITH YOUR OWN FIREBASE CONFIGURATION
-// Get this from your Firebase Console -> Project Settings -> General -> Your apps
-const firebaseConfig = {
-    apiKey: "AIzaSyYOUR_API_KEY_HERE",
-    authDomain: "your-project-id.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project-id.appspot.com",
-    messagingSenderId: "123456789012",
-    appId: "1:123456789012:web:abcdef1234567890123456"
-};
 
-// ===================================
-// Initialize Firebase
-// ===================================
-// Make sure to enable Authentication, Firestore, and Storage in your Firebase Console
-firebase.initializeApp(firebaseConfig);
+// Import the specific services you need from your firebase.js file
+import { auth, db } from './firebase.js';
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// Initialize Firebase services
-const auth = firebase.auth();
-const db = firebase.firestore();
-const storage = firebase.storage();
+// Function to log in a user
+function loginUser(email, password) {
+    // Use the imported 'auth' instance and the specific function
+    return signInWithEmailAndPassword(auth, email, password);
+}
 
-// ===================================
-// Firestore Settings (Optional)
-// ===================================
-// Enable offline persistence (good for PWA)
-db.enablePersistence()
-  .catch((err) => {
-      if (err.code == 'failed-precondition') {
-          // Multiple tabs open, persistence can only be enabled in one tab at a time.
-          console.error('Firestore persistence failed: Multiple tabs open.');
-      } else if (err.code == 'unimplemented') {
-          // The current browser does not support all of the features required to enable persistence.
-          console.error('Firestore persistence failed: Browser not supported.');
-      }
-  });
+// Function to log out a user
+function logoutUser() {
+    return signOut(auth);
+}
 
-console.log("Firebase Initialized Successfully.");
+// Set up an authentication state observer
+function onAuthStateChanged(callback) {
+    // Use the imported 'auth' instance and the specific function
+    return onAuthStateChanged(auth, async (user) => {
+        if (user) {
+            // User is signed in.
+            // Note: You would also import and use 'getDoc' and 'doc' from firestore to get user profile
+            const profile = await getUserProfile(user.uid);
+            callback({ user, profile });
+        } else {
+            // User is signed out.
+            callback({ user: null, profile: null });
+        }
+    });
+}
+
+// You can export these functions to be used in other scripts
+export { loginUser, logoutUser, onAuthStateChanged };
