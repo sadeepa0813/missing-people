@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Missing Person Details | අතුරුදන් වූ පුද්ගලයාගේ විස්තර</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="index.html">
+                <i class="fas fa-search-location me-2"></i>
+                <span class="fw-bold">අතුරුදන් වූවන්</span>
+                <span class="ms-2 fw-light">Missing Persons</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="add.html"><i class="fas fa-plus-circle me-1"></i> Report Missing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html"><i class="fas fa-user-shield me-1"></i> Admin</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="d-flex justify-content-center align-items-center" style="height: 80vh;">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="container mt-4 d-none">
+        <!-- Back Button -->
+        <div class="mb-3">
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+
+        <!-- Person Details Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-user me-2"></i>Missing Person Details</h4>
+                <span id="statusBadge" class="badge"></span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <img id="personPhoto" src="" class="img-fluid rounded" alt="Missing Person Photo">
+                        <div class="mt-3 text-center">
+                            <div id="qrcode" class="d-flex justify-content-center"></div>
+                            <p class="mt-2 small text-muted">Scan for details</p>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th scope="row" width="30%">Name:</th>
+                                    <td id="personName"></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Age:</th>
+                                    <td id="personAge"></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Gender:</th>
+                                    <td id="personGender"></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">District:</th>
+                                    <td id="personDistrict"></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Contact Number:</th>
+                                    <td id="personContact"></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Last Seen Date:</th>
+                                    <td id="personLastSeenDate"></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Description:</th>
+                                    <td id="personDescription"></td>
+                                </tr>
+                                <tr>
+                                    <th scope="row">Reported Date:</th>
+                                    <td id="personReportedDate"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <button id="whatsappShareBtn" class="btn btn-success">
+                                <i class="fab fa-whatsapp me-1"></i> Share on WhatsApp
+                            </button>
+                            <button id="downloadPosterBtn" class="btn btn-info">
+                                <i class="fas fa-download me-1"></i> Download Poster
+                            </button>
+                            <button id="editBtn" class="btn btn-warning d-none">
+                                <i class="fas fa-edit me-1"></i> Edit Details
+                            </button>
+                            <button id="changeStatusBtn" class="btn btn-secondary d-none">
+                                <i class="fas fa-exchange-alt me-1"></i> Change Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Last Seen Location Map -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-map-marked-alt me-2"></i>Last Seen Location</h5>
+            </div>
+            <div class="card-body p-0">
+                <div id="locationMap" style="height: 400px;"></div>
+            </div>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-history me-2"></i>Activity Log</h5>
+            </div>
+            <div class="card-body">
+                <div id="activityLog" class="timeline">
+                    <!-- Activity log items will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Not Found Message -->
+    <div id="notFoundMessage" class="container mt-4 d-none">
+        <div class="alert alert-warning" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <h4 class="alert-heading">Missing Person Not Found</h4>
+            <p>The missing person record you're looking for doesn't exist or has been removed.</p>
+            <hr>
+            <p class="mb-0">Please <a href="index.html" class="alert-link">return to the main page</a> to browse all missing persons.</p>
+        </div>
+    </div>
+
+    <!-- Status Change Modal -->
+    <div class="modal fade" id="statusChangeModal" tabindex="-1" aria-labelledby="statusChangeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="statusChangeModalLabel">Change Status</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="statusSelect" class="form-label">New Status:</label>
+                        <select class="form-select" id="statusSelect">
+                            <option value="Missing">Missing</option>
+                            <option value="Found">Found</option>
+                            <option value="Under Review">Under Review</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="statusNote" class="form-label">Note (optional):</label>
+                        <textarea class="form-control" id="statusNote" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveStatusBtn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>අතුරුදන් වූවන් පිළිබඳ ජාතික තොරතුරු පද්ධතිය</h5>
+                    <p>National Missing Person Management System for Disaster Situations</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2023 Disaster Management Authority of Sri Lanka</p>
+                    <p>All rights reserved</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-bell me-2"></i>
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- QRCode.js -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="firebase.js"></script>
+    <script src="auth.js"></script>
+    <script src="map.js"></script>
+    <script src="utils.js"></script>
+    
+    <script>
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // User is signed in, show admin buttons
+                    document.getElementById('editBtn').classList.remove('d-none');
+                    document.getElementById('changeStatusBtn').classList.remove('d-none');
+                    
+                    // Store user info for later use
+                    window.currentUser = user;
+                }
+            });
+            
+            // Get person ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const personId = urlParams.get('id');
+            
+            if (personId) {
+                loadPersonDetails(personId);
+            } else {
+                // No ID provided, show not found message
+                document.getElementById('loadingSpinner').classList.add('d-none');
+                document.getElementById('notFoundMessage').classList.remove('d-none');
+            }
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+
+        // Function to load person details
+        function loadPersonDetails(personId) {
+            db.collection('missingPersons').doc(personId).get()
+                .then(doc => {
+                    if (doc.exists) {
+                        const person = doc.data();
+                        person.id = doc.id;
+                        
+                        // Display person details
+                        displayPersonDetails(person);
+                        
+                        // Initialize map
+                        initializeLocationMap(person);
+                        
+                        // Generate QR code
+                        generateQRCode(person);
+                        
+                        // Display activity log
+                        displayActivityLog(person);
+                        
+                        // Show main content, hide loading spinner
+                        document.getElementById('loadingSpinner').classList.add('d-none');
+                        document.getElementById('mainContent').classList.remove('d-none');
+                    } else {
+                        // Document doesn't exist
+                        document.getElementById('loadingSpinner').classList.add('d-none');
+                        document.getElementById('notFoundMessage').classList.remove('d-none');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading person details:', error);
+                    showToast('Error loading data. Please try again.', 'danger');
+                    
+                    document.getElementById('loadingSpinner').classList.add('d-none');
+                    document.getElementById('notFoundMessage').classList.remove('d-none');
+                });
+        }
+
+        // Function to display person details
+        function displayPersonDetails(person) {
+            // Set photo
+            document.getElementById('personPhoto').src = person.photoURL || 'https://via.placeholder.com/400x500?text=No+Photo';
+            
+            // Set status badge
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.textContent = person.status || 'Missing';
+            
+            if (person.status === 'Found') {
+                statusBadge.className = 'badge bg-success';
+            } else if (person.status === 'Under Review') {
+                statusBadge.className = 'badge bg-warning';
+            } else {
+                statusBadge.className = 'badge bg-danger';
+            }
+            
+            // Set other details
+            document.getElementById('personName').textContent = person.name || 'Unknown';
+            document.getElementById('personAge').textContent = person.age ? `${person.age} years` : 'Unknown';
+            document.getElementById('personGender').textContent = person.gender || 'Unknown';
+            document.getElementById('personDistrict').textContent = person.district || 'Unknown';
+            document.getElementById('personContact').textContent = person.contact || 'Unknown';
+            document.getElementById('personDescription').textContent = person.description || 'No description available';
+            
+            // Format dates
+            if (person.lastSeenDate) {
+                const lastSeenDate = person.lastSeenDate.toDate ? 
+                    person.lastSeenDate.toDate() : 
+                    new Date(person.lastSeenDate);
+                document.getElementById('personLastSeenDate').textContent = lastSeenDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } else {
+                document.getElementById('personLastSeenDate').textContent = 'Unknown';
+            }
+            
+            if (person.createdAt) {
+                const reportedDate = person.createdAt.toDate ? 
+                    person.createdAt.toDate() : 
+                    new Date(person.createdAt);
+                document.getElementById('personReportedDate').textContent = reportedDate.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } else {
+                document.getElementById('personReportedDate').textContent = 'Unknown';
+            }
+            
+            // Store person data for later use
+            window.currentPerson = person;
+        }
+
+        // Function to initialize location map
+        function initializeLocationMap(person) {
+            if (!person.lastSeenLat || !person.lastSeenLng) {
+                // No location data, show message
+                document.getElementById('locationMap').innerHTML = `
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div class="text-center">
+                            <i class="fas fa-map-marked-alt fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No location data available</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Create map
+            const map = L.map('locationMap').setView([person.lastSeenLat, person.lastSeenLng], 13);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Add marker
+            L.marker([person.lastSeenLat, person.lastSeenLng])
+                .addTo(map)
+                .bindPopup(`<b>${person.name}</b><br>Last seen location`)
+                .openPopup();
+        }
+
+        // Function to generate QR code
+        function generateQRCode(person) {
+            // Clear previous QR code
+            document.getElementById('qrcode').innerHTML = '';
+            
+            // Generate QR code with URL to this page
+            new QRCode(document.getElementById('qrcode'), {
+                text: window.location.href,
+                width: 150,
+                height: 150,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        // Function to display activity log
+        function displayActivityLog(person) {
+            const activityLog = document.getElementById('activityLog');
+            activityLog.innerHTML = '';
+            
+            if (!person.activityLog || person.activityLog.length === 0) {
+                activityLog.innerHTML = '<p class="text-muted">No activity log available</p>';
+                return;
+            }
+            
+            // Sort activity log by timestamp (newest first)
+            const sortedLog = [...person.activityLog].sort((a, b) => {
+                const dateA = a.timestamp.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+                const dateB = b.timestamp.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
+                return dateB - dateA;
+            });
+            
+            // Display each activity
+            sortedLog.forEach(activity => {
+                const date = activity.timestamp.toDate ? 
+                    activity.timestamp.toDate() : 
+                    new Date(activity.timestamp);
+                
+                const activityItem = document.createElement('div');
+                activityItem.className = 'timeline-item';
+                
+                // Determine icon based on action
+                let icon = 'fa-info-circle';
+                if (activity.action === 'Added') {
+                    icon = 'fa-plus-circle';
+                } else if (activity.action === 'Edited') {
+                    icon = 'fa-edit';
+                } else if (activity.action === 'Status Changed') {
+                    icon = 'fa-exchange-alt';
+                }
+                
+                // Determine color based on action
+                let color = 'text-primary';
+                if (activity.action === 'Status Changed') {
+                    if (activity.details && activity.details.includes('Found')) {
+                        color = 'text-success';
+                    } else if (activity.details && activity.details.includes('Under Review')) {
+                        color = 'text-warning';
+                    }
+                }
+                
+                activityItem.innerHTML = `
+                    <div class="timeline-marker ${color}">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6 class="fw-bold">${activity.action}</h6>
+                        <p class="mb-1">${activity.details || ''}</p>
+                        <small class="text-muted">
+                            By ${activity.by || 'Unknown'} on ${date.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}
+                        </small>
+                    </div>
+                `;
+                
+                activityLog.appendChild(activityItem);
+            });
+        }
+
+        // Function to set up event listeners
+        function setupEventListeners() {
+            // WhatsApp share button
+            document.getElementById('whatsappShareBtn').addEventListener('click', function() {
+                if (!window.currentPerson) return;
+                
+                const person = window.currentPerson;
+                const message = `Missing Person: ${person.name}\n` +
+                    `Age: ${person.age || 'Unknown'}\n` +
+                    `Gender: ${person.gender || 'Unknown'}\n` +
+                    `District: ${person.district || 'Unknown'}\n` +
+                    `Last Seen: ${person.lastSeenDate ? new Date(person.lastSeenDate.toDate ? person.lastSeenDate.toDate() : person.lastSeenDate).toLocaleDateString() : 'Unknown'}\n` +
+                    `Contact: ${person.contact || 'Unknown'}\n` +
+                    `Description: ${person.description || 'No description available'}\n\n` +
+                    `For more details: ${window.location.href}`;
+                
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+            });
+            
+            // Download poster button
+            document.getElementById('downloadPosterBtn').addEventListener('click', function() {
+                if (!window.currentPerson) return;
+                
+                generatePoster(window.currentPerson);
+            });
+            
+            // Edit button
+            document.getElementById('editBtn').addEventListener('click', function() {
+                if (!window.currentPerson) return;
+                
+                window.location.href = `edit.html?id=${window.currentPerson.id}`;
+            });
+            
+            // Change status button
+            document.getElementById('changeStatusBtn').addEventListener('click', function() {
+                if (!window.currentPerson) return;
+                
+                // Set current status in modal
+                document.getElementById('statusSelect').value = window.currentPerson.status || 'Missing';
+                
+                // Show modal
+                const statusModal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+                statusModal.show();
+            });
+            
+            // Save status button
+            document.getElementById('saveStatusBtn').addEventListener('click', function() {
+                if (!window.currentPerson || !window.currentUser) return;
+                
+                const newStatus = document.getElementById('statusSelect').value;
+                const statusNote = document.getElementById('statusNote').value;
+                
+                // Update status in Firestore
+                db.collection('missingPersons').doc(window.currentPerson.id).update({
+                    status: newStatus,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: window.currentUser.uid,
+                    activityLog: firebase.firestore.FieldValue.arrayUnion({
+                        action: 'Status Changed',
+                        details: `Status changed to ${newStatus}${statusNote ? ': ' + statusNote : ''}`,
+                        by: window.currentUser.email,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    })
+                })
+                .then(() => {
+                    // Close modal
+                    const statusModal = bootstrap.Modal.getInstance(document.getElementById('statusChangeModal'));
+                    statusModal.hide();
+                    
+                    // Show success message
+                    showToast('Status updated successfully', 'success');
+                    
+                    // Reload page to show updated data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                })
+                .catch(error => {
+                    console.error('Error updating status:', error);
+                    showToast('Error updating status. Please try again.', 'danger');
+                });
+            });
+        }
+
+        // Function to generate poster
+        function generatePoster(person) {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            
+            // Add title
+            pdf.setFontSize(22);
+            pdf.text('MISSING PERSON', 105, 20, { align: 'center' });
+            
+            // Add photo (if available)
+            if (person.photoURL) {
+                try {
+                    pdf.addImage(person.photoURL, 'JPEG', 15, 30, 80, 100);
+                } catch (e) {
+                    console.error('Error adding image to PDF:', e);
+                    // Add placeholder text if image fails to load
+                    pdf.setFontSize(12);
+                    pdf.text('Photo not available', 55, 80, { align: 'center' });
+                }
+            } else {
+                // Add placeholder text
+                pdf.setFontSize(12);
+                pdf.text('Photo not available', 55, 80, { align: 'center' });
+            }
+            
+            // Add details
+            pdf.setFontSize(16);
+            pdf.text('Details:', 105, 40);
+            
+            pdf.setFontSize(12);
+            let yPos = 50;
+            
+            pdf.text(`Name: ${person.name || 'Unknown'}`, 105, yPos);
+            yPos += 10;
+            
+            pdf.text(`Age: ${person.age || 'Unknown'}`, 105, yPos);
+            yPos += 10;
+            
+            pdf.text(`Gender: ${person.gender || 'Unknown'}`, 105, yPos);
+            yPos += 10;
+            
+            pdf.text(`District: ${person.district || 'Unknown'}`, 105, yPos);
+            yPos += 10;
+            
+            pdf.text(`Contact: ${person.contact || 'Unknown'}`, 105, yPos);
+            yPos += 10;
+            
+            if (person.lastSeenDate) {
+                const lastSeenDate = person.lastSeenDate.toDate ? 
+                    person.lastSeenDate.toDate() : 
+                    new Date(person.lastSeenDate);
+                pdf.text(`Last Seen: ${lastSeenDate.toLocaleDateString()}`, 105, yPos);
+                yPos += 10;
+            }
+            
+            // Add description (split into lines if too long)
+            if (person.description) {
+                pdf.text('Description:', 105, yPos);
+                yPos += 7;
+                
+                const splitDescription = pdf.splitTextToSize(person.description, 90);
+                pdf.text(splitDescription, 105, yPos);
+                yPos += splitDescription.length * 5;
+            }
+            
+            // Add contact information at bottom
+            pdf.setFontSize(14);
+            pdf.text('If you have any information, please contact:', 105, 270, { align: 'center' });
+            
+            pdf.setFontSize(12);
+            pdf.text(person.contact || 'Emergency Hotline: 119', 105, 280, { align: 'center' });
+            
+            // Add QR code
+            try {
+                // Generate QR code as data URL
+                const qrCodeCanvas = document.createElement('canvas');
+                new QRCode(qrCodeCanvas, {
+                    text: window.location.href,
+                    width: 100,
+                    height: 100,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+                
+                // Wait for QR code to be generated
+                setTimeout(() => {
+                    const qrCodeDataUrl = qrCodeCanvas.toDataURL();
+                    pdf.addImage(qrCodeDataUrl, 'PNG', 160, 180, 40, 40);
+                    
+                    // Add QR code label
+                    pdf.setFontSize(8);
+                    pdf.text('Scan for details', 180, 225);
+                    
+                    // Save the PDF
+                    pdf.save(`${person.name || 'Missing_Person'}_Poster.pdf`);
+                }, 500);
+            } catch (e) {
+                console.error('Error generating QR code for PDF:', e);
+                // Save the PDF without QR code
+                pdf.save(`${person.name || 'Missing_Person'}_Poster.pdf`);
+            }
+        }
+
+        // Function to show toast notification
+        function showToast(message, type = 'info') {
+            const toastElement = document.getElementById('notificationToast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            // Set message
+            toastMessage.textContent = message;
+            
+            // Set toast type
+            toastElement.className = `toast text-white bg-${type}`;
+            
+            // Show toast
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+    </script>
+</body>
+</html>
