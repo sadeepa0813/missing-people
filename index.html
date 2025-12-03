@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>අතුරුදන් වූවන් පිළිබඳ ජාතික තොරතුරු පද්ධතිය | National Missing Person Management System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d6efd">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="https://via.placeholder.com/192x192">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="fas fa-search-location me-2"></i>
+                <span class="fw-bold">අතුරුදන් වූවන්</span>
+                <span class="ms-2 fw-light">Missing Persons</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#"><i class="fas fa-home me-1"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="add.html"><i class="fas fa-plus-circle me-1"></i> Report Missing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="mapViewBtn"><i class="fas fa-map me-1"></i> Map View</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html"><i class="fas fa-user-shield me-1"></i> Admin</a>
+                    </li>
+                    <li class="nav-item">
+                        <div class="form-check form-switch ms-3 d-flex align-items-center">
+                            <input class="form-check-input" type="checkbox" id="darkModeToggle">
+                            <label class="form-check-label text-white ms-2" for="darkModeToggle">Dark</label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container mt-4">
+        <!-- Search and Filter Section -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-filter me-2"></i>Search & Filter</h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Search by name...">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="districtFilter">
+                            <option value="">All Districts</option>
+                            <option value="Ampara">අම්පාර</option>
+                            <option value="Anuradhapura">අනුරාධපුරය</option>
+                            <option value="Badulla">බදුල්ල</option>
+                            <option value="Batticaloa">මඩකලපුව</option>
+                            <option value="Colombo">කොළඹ</option>
+                            <option value="Galle">ගාල්ල</option>
+                            <option value="Gampaha">ගම්පහ</option>
+                            <option value="Hambantota">හම්බන්තොට</option>
+                            <option value="Jaffna">යාපනය</option>
+                            <option value="Kalutara">කළුතර</option>
+                            <option value="Kandy">මහනුවර</option>
+                            <option value="Kegalle">කෑගල්ල</option>
+                            <option value="Kilinochchi">කිලිනොච්චිය</option>
+                            <option value="Kurunegala">කුරුණෑගල</option>
+                            <option value="Mannar">මන්නාරම</option>
+                            <option value="Matale">මාතලේ</option>
+                            <option value="Matara">මාතර</option>
+                            <option value="Moneragala">මොණරාගල</option>
+                            <option value="Mullaitivu">මුලතිව්</option>
+                            <option value="Nuwara Eliya">නුවරඑළිය</option>
+                            <option value="Polonnaruwa">පොලොන්නරුව</option>
+                            <option value="Puttalam">පුත්තලම</option>
+                            <option value="Ratnapura">රත්නපුර</option>
+                            <option value="Trincomalee">ත්රිකුණාමලය</option>
+                            <option value="Vavuniya">වවුනියාව</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="genderFilter">
+                            <option value="">All Genders</option>
+                            <option value="Male">පිරිමි</option>
+                            <option value="Female">ගැහැණු</option>
+                            <option value="Other">වෙනත්</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="Missing">අතුරුදන්</option>
+                            <option value="Found">සොයාගෙන ඇත</option>
+                            <option value="Under Review">සමාලෝචනය යටතේ</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" id="sortFilter">
+                            <option value="newest">Newest First</option>
+                            <option value="oldest">Oldest First</option>
+                            <option value="alphabetical">Alphabetical (A-Z)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0"><i class="fas fa-users me-2"></i>Missing Persons</h4>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary active" id="gridViewBtn">
+                    <i class="fas fa-th"></i> Grid View
+                </button>
+                <button type="button" class="btn btn-outline-primary" id="mapViewBtn">
+                    <i class="fas fa-map-marked-alt"></i> Map View
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Skeleton -->
+        <div id="loadingSkeleton" class="row">
+            <!-- Skeleton items will be inserted here -->
+        </div>
+
+        <!-- Grid View -->
+        <div id="gridView" class="row">
+            <!-- Missing person cards will be inserted here -->
+        </div>
+
+        <!-- Map View -->
+        <div id="mapView" class="d-none">
+            <div id="missingPersonMap" style="height: 600px; border-radius: 8px;"></div>
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="alert alert-info d-none" role="alert">
+            <i class="fas fa-info-circle me-2"></i>No missing persons found matching your criteria.
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light mt-5 py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>අතුරුදන් වූවන් පිළිබඳ ජාතික තොරතුරු පද්ධතිය</h5>
+                    <p>National Missing Person Management System for Disaster Situations</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2023 Disaster Management Authority of Sri Lanka</p>
+                    <p>All rights reserved</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="notificationToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i class="fas fa-bell me-2"></i>
+                <strong class="me-auto">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Marker Cluster -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+    <!-- QRCode.js -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- jsPDF for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="firebase.js"></script>
+    <script src="auth.js"></script>
+    <script src="map.js"></script>
+    <script src="utils.js"></script>
+    
+    <script>
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if PWA is supported and register service worker
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('pwa-service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker registered with scope:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            }
+
+            // Check for dark mode preference
+            const darkModeToggle = document.getElementById('darkModeToggle');
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            
+            if (currentTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                darkModeToggle.checked = true;
+            }
+            
+            darkModeToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    document.body.classList.add('dark-mode');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            // Show loading skeleton
+            showLoadingSkeleton();
+            
+            // Load missing persons data
+            loadMissingPersons();
+            
+            // Set up event listeners
+            setupEventListeners();
+        });
+
+        // Function to show loading skeleton
+        function showLoadingSkeleton() {
+            const skeletonContainer = document.getElementById('loadingSkeleton');
+            skeletonContainer.innerHTML = '';
+            
+            // Create 8 skeleton cards
+            for (let i = 0; i < 8; i++) {
+                const skeletonCard = document.createElement('div');
+                skeletonCard.className = 'col-md-6 col-lg-4 mb-4';
+                skeletonCard.innerHTML = `
+                    <div class="card skeleton-card h-100">
+                        <div class="skeleton skeleton-img"></div>
+                        <div class="card-body">
+                            <div class="skeleton skeleton-title"></div>
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text short"></div>
+                            <div class="skeleton skeleton-button"></div>
+                        </div>
+                    </div>
+                `;
+                skeletonContainer.appendChild(skeletonCard);
+            }
+            
+            // Show skeleton, hide actual content
+            document.getElementById('loadingSkeleton').classList.remove('d-none');
+            document.getElementById('gridView').classList.add('d-none');
+            document.getElementById('noResults').classList.add('d-none');
+        }
+
+        // Function to load missing persons
+        function loadMissingPersons() {
+            // Get filter values
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const districtFilter = document.getElementById('districtFilter').value;
+            const genderFilter = document.getElementById('genderFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const sortFilter = document.getElementById('sortFilter').value;
+            
+            // Get missing persons from Firestore
+            db.collection('missingPersons')
+                .get()
+                .then(snapshot => {
+                    let missingPersons = [];
+                    
+                    snapshot.forEach(doc => {
+                        const person = doc.data();
+                        person.id = doc.id;
+                        
+                        // Apply filters
+                        if (searchTerm && !person.name.toLowerCase().includes(searchTerm)) {
+                            return;
+                        }
+                        
+                        if (districtFilter && person.district !== districtFilter) {
+                            return;
+                        }
+                        
+                        if (genderFilter && person.gender !== genderFilter) {
+                            return;
+                        }
+                        
+                        if (statusFilter && person.status !== statusFilter) {
+                            return;
+                        }
+                        
+                        missingPersons.push(person);
+                    });
+                    
+                    // Sort results
+                    switch (sortFilter) {
+                        case 'newest':
+                            missingPersons.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+                            break;
+                        case 'oldest':
+                            missingPersons.sort((a, b) => a.createdAt.toDate() - b.createdAt.toDate());
+                            break;
+                        case 'alphabetical':
+                            missingPersons.sort((a, b) => a.name.localeCompare(b.name));
+                            break;
+                    }
+                    
+                    // Hide loading skeleton
+                    document.getElementById('loadingSkeleton').classList.add('d-none');
+                    
+                    // Display results
+                    if (missingPersons.length > 0) {
+                        displayMissingPersons(missingPersons);
+                        document.getElementById('gridView').classList.remove('d-none');
+                        document.getElementById('noResults').classList.add('d-none');
+                    } else {
+                        document.getElementById('gridView').classList.add('d-none');
+                        document.getElementById('noResults').classList.remove('d-none');
+                    }
+                    
+                    // Initialize map if in map view
+                    if (!document.getElementById('mapView').classList.contains('d-none')) {
+                        initializeMap(missingPersons);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading missing persons:', error);
+                    showToast('Error loading data. Please try again.', 'danger');
+                    
+                    // Hide loading skeleton
+                    document.getElementById('loadingSkeleton').classList.add('d-none');
+                    document.getElementById('gridView').classList.add('d-none');
+                    document.getElementById('noResults').classList.remove('d-none');
+                });
+        }
+
+        // Function to display missing persons in grid view
+        function displayMissingPersons(missingPersons) {
+            const gridView = document.getElementById('gridView');
+            gridView.innerHTML = '';
+            
+            missingPersons.forEach(person => {
+                const card = document.createElement('div');
+                card.className = 'col-md-6 col-lg-4 mb-4';
+                
+                // Format date
+                const lastSeenDate = person.lastSeenDate ? 
+                    new Date(person.lastSeenDate.toDate ? person.lastSeenDate.toDate() : person.lastSeenDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric'
+                    }) : 'Unknown';
+                
+                // Determine status badge class
+                let statusBadgeClass = 'bg-danger';
+                if (person.status === 'Found') {
+                    statusBadgeClass = 'bg-success';
+                } else if (person.status === 'Under Review') {
+                    statusBadgeClass = 'bg-warning';
+                }
+                
+                card.innerHTML = `
+                    <div class="card h-100 shadow-sm">
+                        <div class="position-relative">
+                            <img src="${person.photoURL || 'https://via.placeholder.com/400x300?text=No+Photo'}" 
+                                 class="card-img-top" alt="${person.name}">
+                            <span class="position-absolute top-0 end-0 m-2 badge ${statusBadgeClass}">${person.status || 'Missing'}</span>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">${person.name}</h5>
+                            <div class="mb-2">
+                                <span class="badge bg-secondary me-1">${person.age || 'Unknown'} years</span>
+                                <span class="badge bg-secondary">${person.gender || 'Unknown'}</span>
+                            </div>
+                            <p class="card-text flex-grow-1">${person.description ? person.description.substring(0, 100) + (person.description.length > 100 ? '...' : '') : 'No description available'}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i> ${person.district || 'Unknown district'}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i> ${lastSeenDate}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="view.html?id=${person.id}" class="btn btn-primary w-100">
+                                <i class="fas fa-eye me-1"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                `;
+                
+                gridView.appendChild(card);
+            });
+        }
+
+        // Function to set up event listeners
+        function setupEventListeners() {
+            // Search and filter inputs
+            document.getElementById('searchInput').addEventListener('input', debounce(loadMissingPersons, 500));
+            document.getElementById('districtFilter').addEventListener('change', loadMissingPersons);
+            document.getElementById('genderFilter').addEventListener('change', loadMissingPersons);
+            document.getElementById('statusFilter').addEventListener('change', loadMissingPersons);
+            document.getElementById('sortFilter').addEventListener('change', loadMissingPersons);
+            
+            // View toggle buttons
+            document.getElementById('gridViewBtn').addEventListener('click', function() {
+                document.getElementById('gridView').classList.remove('d-none');
+                document.getElementById('mapView').classList.add('d-none');
+                this.classList.add('active');
+                document.getElementById('mapViewBtn').classList.remove('active');
+            });
+            
+            document.getElementById('mapViewBtn').addEventListener('click', function() {
+                document.getElementById('gridView').classList.add('d-none');
+                document.getElementById('mapView').classList.remove('d-none');
+                this.classList.add('active');
+                document.getElementById('gridViewBtn').classList.remove('active');
+                
+                // Load map if not already loaded
+                if (!window.mapInitialized) {
+                    loadMissingPersons();
+                }
+            });
+        }
+
+        // Function to initialize map with missing persons
+        function initializeMap(missingPersons) {
+            // Check if map already exists
+            if (window.missingPersonMap) {
+                window.missingPersonMap.remove();
+            }
+            
+            // Create map
+            window.missingPersonMap = L.map('missingPersonMap').setView([7.8731, 80.7718], 8); // Center of Sri Lanka
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(window.missingPersonMap);
+            
+            // Create marker cluster group
+            const markers = L.markerClusterGroup();
+            
+            // Add markers for each missing person
+            missingPersons.forEach(person => {
+                if (person.lastSeenLat && person.lastSeenLng) {
+                    // Determine marker color based on status
+                    let markerColor = '#dc3545'; // Red for Missing
+                    if (person.status === 'Found') {
+                        markerColor = '#198754'; // Green for Found
+                    } else if (person.status === 'Under Review') {
+                        markerColor = '#ffc107'; // Yellow for Under Review
+                    }
+                    
+                    // Create custom icon
+                    const customIcon = L.divIcon({
+                        html: `<div style="background-color: ${markerColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>`,
+                        iconSize: [20, 20],
+                        iconAnchor: [10, 10],
+                        popupAnchor: [0, -10]
+                    });
+                    
+                    // Create marker
+                    const marker = L.marker([person.lastSeenLat, person.lastSeenLng], { icon: customIcon });
+                    
+                    // Create popup content
+                    const popupContent = `
+                        <div class="popup-content">
+                            <img src="${person.photoURL || 'https://via.placeholder.com/200x150?text=No+Photo'}" 
+                                 class="img-fluid mb-2" alt="${person.name}">
+                            <h5>${person.name}</h5>
+                            <p><strong>Status:</strong> <span class="badge bg-${person.status === 'Found' ? 'success' : person.status === 'Under Review' ? 'warning' : 'danger'}">${person.status || 'Missing'}</span></p>
+                            <p><strong>Age:</strong> ${person.age || 'Unknown'}</p>
+                            <p><strong>Gender:</strong> ${person.gender || 'Unknown'}</p>
+                            <p><strong>District:</strong> ${person.district || 'Unknown'}</p>
+                            <p><strong>Last Seen:</strong> ${person.lastSeenDate ? new Date(person.lastSeenDate.toDate ? person.lastSeenDate.toDate() : person.lastSeenDate).toLocaleDateString() : 'Unknown'}</p>
+                            <a href="view.html?id=${person.id}" class="btn btn-primary btn-sm">View Details</a>
+                        </div>
+                    `;
+                    
+                    marker.bindPopup(popupContent);
+                    markers.addLayer(marker);
+                }
+            });
+            
+            // Add marker cluster group to map
+            window.missingPersonMap.addLayer(markers);
+            
+            // Set map as initialized
+            window.mapInitialized = true;
+        }
+
+        // Function to show toast notification
+        function showToast(message, type = 'info') {
+            const toastElement = document.getElementById('notificationToast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            // Set message
+            toastMessage.textContent = message;
+            
+            // Set toast type
+            toastElement.className = `toast text-white bg-${type}`;
+            
+            // Show toast
+            const toast = new bootstrap.Toast(toastElement);
+            toast.show();
+        }
+
+        // Debounce function to limit API calls
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => {
+                    func.apply(context, args);
+                }, wait);
+            };
+        }
+    </script>
+</body>
+</html>
